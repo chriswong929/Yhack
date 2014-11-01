@@ -1,6 +1,11 @@
 
 var mraa = require('mraa'); //require mraa
 var LCD  = require ('jsupm_i2clcd');
+var upmBuzzer = require("jsupm_buzzer");
+
+var myBuzzer = new upmBuzzer.Buzzer(5);
+var chord = [upmBuzzer.DO, upmBuzzer.RE, upmBuzzer.MI, upmBuzzer.FA, upmBuzzer.SOL, upmBuzzer.LA, upmBuzzer.SI, upmBuzzer.DO, upmBuzzer.SI];
+var chordIndex = 0;
 
 console.log('MRAA Version: ' + mraa.getVersion()); //write the mraa version to the console
 
@@ -11,12 +16,14 @@ var ledPin10 = new mraa.Gpio(10);
 var lcdMessage=" ";
 var myLCD = new LCD.Jhd1313m1(0, 0x3E, 0x62);
 
-amazing();
+var analogPin0 = new mraa.Aio(0); //setup access analog input Analog pin #0 (A0)
 
-function amazing(){
+main();
+
+function main(){
     
 
-var analogPin0 = new mraa.Aio(0); //setup access analog input Analog pin #0 (A0)
+
 var analogValue = analogPin0.read(); //read the value of the analog pin
     
 
@@ -37,19 +44,16 @@ if(analogValue >1000){
     myLCD.setColor(255,255,0);
     lcdMessage = "Enough Water!";
 }else if(analogValue <100){
-    ledPin8.write(0); //B
+    ledPin8.write(255); //R
     ledPin9.write(0); // G
-    ledPin10.write(255); //R
+    ledPin10.write(0); //B
     myLCD.setColor(255,0,0);
+    myBuzzer.playSound(chord[chordIndex], 100000);
     lcdMessage = "Low on Water!";
 }
 
 myLCD.setCursor(0,0);
-if (myLCD.read() == lcdMessage){
-}else{
-    myLCD.clear();
-    myLCD.write(lcdMessage);
-}
+myLCD.write(lcdMessage);
 console.log(analogValue); //write the value of the analog pin to the console
 setTimeout( amazing, 1000 );
 }
